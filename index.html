@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Recebimento SM - Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#CC0000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Expedição SM">
+  <link rel="apple-touch-icon" href="https://via.placeholder.com/192/CC0000/FFFFFF?text=SM">
+
+  <style>
+    :root {
+      --primary: #CC0000;
+      --dark: #2d2d2d;
+      --glass: rgba(255, 255, 255, 0.7);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-weight='900' font-size='120' fill='rgba(204, 0, 0, 0.03)' text-anchor='middle' transform='rotate(-20, 500, 500)'%3EMóveis Simonetti%3C/text%3E%3C/svg%3E");
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 80px; /* Espaço para o botão no rodapé não cobrir o conteúdo */
+    }
+
+    .top-bar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      width: 100%;
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+
+    .user-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #welcomeUser { font-weight: 600; color: var(--dark); }
+
+    .btn-logout {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      transition: opacity 0.3s;
+    }
+
+    .btn-logout:hover { opacity: 0.8; }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 500px;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: var(--dark);
+      font-size: 1.8rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    h1 span { color: var(--primary); }
+
+    .menu-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .menu-item {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 25px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .menu-item:hover {
+      transform: translateY(-5px) scale(1.02);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: var(--primary);
+      box-shadow: 0 12px 40px rgba(204, 0, 0, 0.1);
+    }
+
+    .icon-box {
+      font-size: 32px;
+      background: white;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .label-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Estilo do Botão de Instalação no Rodapé */
+    #installPWA {
+      display: none; /* Fica escondido até que o navegador suporte a instalação */
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 50px;
+      font-weight: bold;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      z-index: 2000;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    #installPWA:active { transform: translateX(-50%) scale(0.95); }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="user-area">
+      <span id="welcomeUser">Carregando...</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">SAIR</button>
+  </div>
+
+  <div class="container">
+    <h1>Painel de <span>Recebimento</span></h1>
+
+    <div class="menu-grid">
+      <a href="cargas do dia.html" class="menu-item">
+        <div class="icon-box">🚚</div>
+        <div class="label-text">RECEBIMENTO DO DIA</div>
+      </a>
+
+      <a href="agendamento.html" class="menu-item">
+        <div class="icon-box">📅</div>
+        <div class="label-text">AGENDAMENTO</div>
+      </a>
+      
+      <a href="ajuste.html" class="menu-item">
+        <div class="icon-box">🛠️</div>
+        <div class="label-text">AJUSTE</div>
+      </a>
+    </div>
+  </div>
+
+  <button id="installPWA">Instalar PWA</button>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBvcY4cObePVA0knUcmeSCT2JPkpATQpIw",
+    authDomain: "recebimento-45b44.firebaseapp.com",
+    projectId: "recebimento-45b44",
+    storageBucket: "recebimento-45b44.firebasestorage.app",
+    messagingSenderId: "163866983916",
+    appId: "1:163866983916:web:e901b7cf58b28733a554c9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const storedName = localStorage.getItem("username");
+      if (storedName) {
+        document.getElementById("welcomeUser").textContent = `Olá, ${storedName}`;
+      } else {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const name = userDoc.data().username;
+          document.getElementById("welcomeUser").textContent = `Olá, ${name}`;
+          localStorage.setItem("username", name);
+        }
+      }
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  window.logout = () => {
+    signOut(auth).then(() => {
+      localStorage.clear();
+      window.location.href = "login.html";
+    });
+  };
+
+  // --- LÓGICA DO PWA E BOTÃO DE INSTALAÇÃO ---
+  
+  let deferredPrompt;
+  const installBtn = document.getElementById('installPWA');
+
+  // Registro do Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('PWA: Service Worker registrado.'))
+        .catch(err => console.log('PWA: Erro no Worker.', err));
+    });
+  }
+
+  // Captura o evento de instalação
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Mostra o botão no rodapé
+    installBtn.style.display = 'block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        installBtn.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+  });
+
+  // Esconde o botão se o app já estiver instalado
+  window.addEventListener('appinstalled', () => {
+    installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+</script>
+
+</body>
+</html>
